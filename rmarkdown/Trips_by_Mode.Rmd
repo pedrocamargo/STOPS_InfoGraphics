@@ -1,0 +1,179 @@
+---
+title: "Trips by Access Mode"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+    keep_md: yes
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(flexdashboard)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+library(rgdal)
+library(plotly)
+library(htmltools)
+library(DT)
+library(chorddiag)
+library(DiagrammeR)
+library(parsetR) 
+library(readr)
+dir <- '/Volumes/C/projects/TRB_Apps_2017/Infographic_STOPS/data'
+txt_dir <- paste(dir,"txt_extract", sep = "/")
+csv_dir <- paste(dir,"csv_dir",sep ="/")
+
+setwd(dir)
+```
+
+
+## 1. Existing
+
+### Zero Car HH
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+table.name <- "Table    11.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+
+
+x_car0 <- x %>% filter(`HH Cars` == "0 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y1 <- parset(x_car0, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y1
+
+```
+
+### One Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car1 <- x %>% filter(`HH Cars` == "1 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y2 <- parset(x_car1, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y2
+
+```
+
+### Two+ Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car2 <- x %>% filter(`HH Cars` == "2+ car") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y3 <- parset(x_car2, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 600, height = 400)
+y3
+
+```
+
+
+## 2. Build
+
+### Zero Car HH
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+table.name <- "Table    11.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+
+
+x_car0 <- x %>% filter(`HH Cars` == "0 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model_1)
+
+y1 <- parset(x_car0, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model_1}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y1
+
+```
+
+### One Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car1 <- x %>% filter(`HH Cars` == "1 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model_1)
+
+y2 <- parset(x_car1, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model_1}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y2
+
+```
+
+### Two+ Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car2 <- x %>% filter(`HH Cars` == "2+ car") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model_1)
+
+y3 <- parset(x_car2, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model_1}"), 
+       tension = 0.5, width = 600, height = 400)
+y3
+
+```
+
+## 3. Project
+
+### Zero Car HH
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+table.name <- "Table    11.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+
+
+x_car0 <- x %>% filter(`HH Cars` == "0 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Project)
+
+y1 <- parset(x_car0, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Project}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y1
+
+```
+
+### One Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car1 <- x %>% filter(`HH Cars` == "1 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Project)
+
+y2 <- parset(x_car1, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Project}"), 
+       tension = 0.5, width = 600, height = 400)
+
+y2
+
+```
+
+### Two+ Car HH 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+x_car2 <- x %>% filter(`HH Cars` == "2+ car") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Project)
+
+y3 <- parset(x_car2, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Project}"), 
+       tension = 0.5, width = 600, height = 400)
+y3
+
+```

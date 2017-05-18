@@ -1,0 +1,523 @@
+---
+title: "STOPS Report"
+author: "Amar Sarvepalli"
+date: "May 5, 2017"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+    keep_md: yes
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(flexdashboard)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+library(rgdal)
+library(plotly)
+library(htmltools)
+library(DT)
+library(chorddiag)
+library(readr)
+library(DiagrammeR)
+```
+
+
+```{r, echo = FALSE}
+# User Settings
+#dir <- '/Volumes/C/projects/SMART Plan Systemwide STOPS/AC_MDTEXIST#MDTNOB#MDTBLD_STOPSY2015Results'
+dir <- '/Volumes/C/projects/TRB_Apps_2017/Infographic_STOPS/data'
+
+txt_dir <- paste(dir,"txt_extract", sep = "/")
+csv_dir <- paste(dir,"csv_dir",sep ="/")
+
+setwd(dir)
+
+options(DT.options = list(
+              initComplete = JS("function(settings, json) { ",
+                 "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});","}"),
+              searchHighlight = TRUE
+              ))
+
+```
+
+
+## 1: Summary of Key Inputs
+
+   Run Parmameters:     1.01
+   Station Listing:     1.02
+   
+------------------------------------------------------------------------------------------------
+```{r}
+table.name <- "Table     1.01.csv"
+x <- read.csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x) %>% formatStyle('Run.Parameters', backgroundColor = 'lightgrey')
+```
+
+## 2: Summary Of Existing Scenario Results Before Station Group Calibration {.tabset .tabset-fade .tabset-pills}
+
+### 2.01 Initial Calibration Statistics        
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     2.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Exsitng Scenario Results Before Station Group Calibration", 
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'black')
+```
+
+### 2.02 Iter.1 Station Groups by Production District
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     2.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Groups by Production District",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue') 
+```
+
+### 2.03 Attraction Districts-Station Group Results - Iteration 1
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     2.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Attraction Districts-Station Group Results",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightgreen')
+```
+
+### 2.04 Station Group to Station Group Ridership
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     2.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Group to Station Group Ridership",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+
+### 2.05 Station Group to Station Group Adj Factors    
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     2.05.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Group to Station Group Adj Factors",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+
+------------------------------------------------------------------------------------------------
+
+##  3: Summary Of Station Group Calibration Process 
+
+### Station Group-Station Group Accumulators  {.tabset .tabset-fade .tabset-pills} 
+#### 3.01 Station Group to Station Group Ridership-Existing
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Group to Station Group Ridership-Existing",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+
+
+#### 3.02 Station Group to Station Group Ridership-No-Build
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Group to Station Group Ridership-No-Build",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+
+#### 3.03 Station Group to Station Group Ridership-Build
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, caption = "Station Group to Station Group Ridership-Build",
+             class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightgreen')
+```
+   
+### Station-Station Accumulators  {.tabset .tabset-fade .tabset-pills} 
+
+#### 3.05 Station Group to Station Group Build Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+
+
+#### 3.05 Station Group to Station Group Build Trips (Added by Station Factors)
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.05.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+
+#### 3.06 Station Group to Station Group Project Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.06.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+
+#### 3.07 Station Group to Station Group Project Trips (Added by Station Factors)
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     3.07.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightgreen')
+```
+  
+------------------------------------------------------------------------------------------------
+
+##  4: Summary Of Project Results{.tabset .tabset-fade .tabset-pills}
+
+### 4.01 Weekday Linked District-to-District Transit Trips, Build, All Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     4.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+
+
+### 4.02 Weekday Incremental Linked Dist-to-Dist Transit Trips, Build, All Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     4.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+
+
+### 4.03 Weekday Linked District-to-District Project Trips, Build, All Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     4.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+
+
+### 4.04 Weekday Unlinked Station-to-Station Project Trips, Build, All Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     4.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('StationGroup', backgroundColor = 'lightgreen')
+```
+    
+------------------------------------------------------------------------------------------------
+
+##  5: Summary Of Project Results For Trips On Fixed Guideway (fg) Modes{.tabset .tabset-fade .tabset-pills}
+
+### 5.01 Weekday Linked District-to-District Transit Trips, Build, FG Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     5.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+    
+### 5.02 Weekday Incremental Linked Dist-to-Dist Transit Trips, Build, FG Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     5.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+    
+### 5.03 Weekday Linked District-to-District Project Trips, Build, FG Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     5.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+    
+### 5.04 Weekday Unlinked Station-to-Station Project Trips, Build, FG Trips
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     5.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('StationGroup', backgroundColor = 'lightgreen')
+```
+       
+------------------------------------------------------------------------------------------------
+
+##  6: Summary Of Project Results For Trips Made By 0-car Households{.tabset .tabset-fade .tabset-pills}
+
+### 6.01 Weekday Linked District-to-District Transit Trips, Build, All Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     6.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+ 
+### 6.02 Weekday Incremental Linked Dist-to-Dist Transit Trips, Build, All Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     6.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+  
+### 6.03 Weekday Linked District-to-District Project Trips, Build, All Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     6.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+
+### 6.04 Weekday Unlinked Station-to-Station Project Trips, Build, All Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     6.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('StationGroup', backgroundColor = 'lightgreen')
+```
+     
+------------------------------------------------------------------------------------------------
+
+##  7: Summary Of Project Results For Trips On Fixed Guideway (fg) Modes By 0-car Hh{.tabset .tabset-fade .tabset-pills}
+
+### 7.01 Weekday Linked District-to-District Transit Trips, Build, FG Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     7.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightblue')
+```
+    
+### 7.02 Weekday Incremental Linked Dist-to-Dist Transit Trips, Build, FG Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     7.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+    
+### 7.03 Weekday Linked District-to-District Project Trips, Build, FG Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     7.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+    
+### 7.04 Weekday Unlinked Station-to-Station Project Trips, Build, FG Trips by 0 Car HH
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     7.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('StationGroup', backgroundColor = 'lightgreen')
+```
+       
+------------------------------------------------------------------------------------------------
+##  8: Summary Of Impacts On Automobile Person Miles Of Trips
+
+### 8.01 Incremental District-to-District Vehicle PMT
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     8.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightgreen')
+```
+ 
+------------------------------------------------------------------------------------------------
+
+##  9: Comparison Of Existing, No-build And Build Station Boardings By Station Mode Of Access
+
+### 9.01 Average Weekday Station Boardings by Mode of Access
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table     9.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('Station Name', backgroundColor = 'lightgreen')
+```
+ 
+------------------------------------------------------------------------------------------------
+
+##  10: Comparison Of Existing, No-build And Build Route Performance {.tabset .tabset-fade .tabset-pills}
+
+### 10.01 Average Weekday Route Boardings
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    10.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('Route Name', backgroundColor = 'lightblue')
+```
+ 
+### 10.02 Average Weekday Route Boardings by Station Group
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    10.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('Route Name and group', backgroundColor = 'lightpink')
+```
+ 
+### 10.03 Peak Route-Level Trips, Miles, and Hours
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    10.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('Route Name', backgroundColor = 'orange')
+```
+ 
+### 10.04 Off-Peak Route-Level Trips, Miles, and Hours
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    10.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('Route Name', backgroundColor = 'lightgreen')
+```
+    
+------------------------------------------------------------------------------------------------
+
+##  11: Summary Of Trips By Submode, Access Mode, Auto Ownership, And Scenario{.tabset .tabset-fade .tabset-pills}
+
+### 11.01 Home-Based Work     
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    11.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('HH Cars', backgroundColor = 'lightblue')
+```
+   
+### 11.02 Home-Based Other   
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    11.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('HH Cars', backgroundColor = 'lightpink')
+```
+   
+### 11.03 Non-Home Based     
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    11.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('HH Cars', backgroundColor = 'orange')
+```
+   
+### 11.04 Total         
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    11.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('HH Cars', backgroundColor = 'lightgreen')
+```
+   
+------------------------------------------------------------------------------------------------
+
+##  12: Summary Of Ctpp Workers And Employees And Mpo Estimates Of Population And Employment By Scenario
+
+### 12.01 SE Summary   
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    12.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'black')
+```
+  
+------------------------------------------------------------------------------------------------
+
+##  13: Summary Of Highway Time, Distance And Speed{.tabset .tabset-fade .tabset-pills}
+
+### 13.01  Existing Time  
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    13.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'black')
+```
+  
+### 13.02  No-Build Time  
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    13.02.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'green')
+```
+  
+### 13.03  Build Time   
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    13.03.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'blue')
+```
+  
+### 13.04  Existing Distance
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    13.04.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'lightpink')
+```
+  
+### 13.05  No-Build Distance
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+table.name <- "Table    13.05.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+datatable(x, class = 'cell-border stripe',
+             rownames = FALSE) %>% 
+  formatStyle('District', backgroundColor = 'orange')
+```
+  
+### 13.06  Build Distance
+### 13.07  Existing Speed
+### 13.08  No-Build Speed
+### 13.09  Build Speed

@@ -1,0 +1,304 @@
+---
+title: "STOPS Infographics"
+output: 
+  flexdashboard::flex_dashboard:
+    #theme: cerulean
+    #orientation: columns
+    #vertical_layout: fill
+    navbar:
+      - { title: "STOPS Infographics"}
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+library(rgdal)
+library(plotly)
+library(htmltools)
+library(DT)
+library(chorddiag)
+library(DiagrammeR)
+library(parsetR) 
+library(readr)
+```
+
+
+```{r, echo = FALSE}
+# User Settings
+dir <- '/Volumes/C/projects/TRB_Apps_2017/Infographic_STOPS/data'
+txt_dir <- paste(dir,"txt_extract", sep = "/")
+csv_dir <- paste(dir,"csv_dir",sep ="/")
+
+setwd(dir)
+
+```
+
+
+Overview {data-orientation=cols}
+=====================================
+
+```{r, echo = FALSE}
+# Build a flow chart to give an overview
+
+grViz("
+digraph neato {
+
+graph [layout = neato]
+
+node [shape = circle,
+      style = filled,
+      color = grey,
+      label = '']
+
+node [fillcolor = red]
+a [label = 'STOPS Run']
+
+node [fillcolor = green]
+b [label = 'Inputs', pack = 'TRUE', packmode = 'clust']
+c [label = 'Reports']
+d [label = 'Outputs']
+e [label = 'Maps']
+
+node [fillcolor = orange]
+
+# Input files
+f [label = 'stns' tooltip = 'shapefile' URL = 'StopsStations.html' ]
+g [label = 'mpo' tooltip = 'MPO_Data' URL = 'SERPM_vs_STOPS.html']
+h [label = 'gtfs' tooltip = 'Build Alternative' URL = 'https://platform.remix.com/map/9011aee?latlng=25.70651,-80.25101,z10']
+i [label = 'apc' tooltip = 'APC_Data' URL = 'APC_Data.html']
+
+# Output files
+k [label = 'report' tooltip = 'logfile' URL = 'STOPS_TOC.html' ]
+l [label = 'ctpp' tooltip = 'logfile' URL = 'CTPP_District2District_Flows.html']
+
+j [label = 'flows' tooltip = 'district to district trip flows' URL = 'Trip_Flows_Origins.html']
+q [label = 'charts' tooltip = 'existing vs build' URL = 'existing_vs_build.html']
+3 [label = 'mode' tooltip = 'trips by mode' URL = 'Trips_by_Mode.html']
+
+edge [color = grey]
+a -> {b c d e}
+b -> {f g h i}
+c -> {k l}
+d -> {q 3 4}
+e -> {j 1 2}
+
+}")
+
+```
+
+Calibration {data-orientation=columns, data-navmenu="Calibration"}
+===================================== 
+
+**Calibration Summary**
+```{r}
+
+
+# Function to produce thematic maps
+D2Dplots <- function(csv_dir,table.name) {
+  
+  if (table.name == "Table     3.01.csv" || table.name == "Table     3.03.csv"){
+    df <- read.csv(paste(csv_dir,table.name, sep = "/"), header = FALSE, skip = 1)
+  } else{
+    df <- read.csv(paste(csv_dir,table.name, sep = "/")) 
+  }
+
+  row_col_names <- df[,1]
+  df <- df[,2:ncol(df)]
+  row.names(df) <- row_col_names
+  colnames(df) <- row_col_names
+  
+  # remove rows/cols with no district names (district numbering is not sequential)
+  df <- df %>% 
+        select(- ends_with("-")) %>%
+        t() %>% as.data.frame() %>% select(- ends_with("-")) %>%
+        t() %>% as.data.frame() 
+  
+  # produce a chordiagram
+  if (table.name == "Table     3.01.csv") {
+     df_chord <- df[1:(nrow(df)-3), 1:(ncol(df)-3)]
+  }
+  if (table.name == "Table     3.03.csv") {
+     df_chord <- df[1:(nrow(df)-1), 1:(ncol(df)-1)]
+  }
+  if (table.name == "Table     2.05.csv") {
+     df_chord <- df
+  }  
+  m <- as.matrix(df_chord)
+  groupColors <- c("#000000", "#FFDD89", "#957244", "#F26223")
+  chord <- chorddiag(m, groupnamePadding = 40, categorynameFontsize = 14,
+                     groupnameFontsize = 12,
+                     width = 50, height = 50)
+  
+  # produce a heat map
+  p <- plot_ly(
+      x = row.names(df_chord), y = colnames(df_chord),
+      z = m, colorscale = "Greys", type = "heatmap"
+  )
+# colors = colorRamp(c("green", "red"))
+   plots <- list(heatmap = p, chordmap = chord, df = df)
+   
+   return(plots)
+}
+
+
+existing <- D2Dplots(csv_dir, "Table     3.01.csv")
+build <- D2Dplots(csv_dir,  "Table     3.03.csv")
+
+exist.df <- existing$df
+build.df <- build$df
+
+# Get calibration at station group level
+exist.df.calib <- exist.df %>% 
+               select(TOTAL,GOAL) %>%
+               add_rownames()
+exist.df.calib <- exist.df.calib[1:(nrow(exist.df.calib) -3),]
+
+p.calibration <- plot_ly(exist.df.calib, x = ~rowname, y = ~TOTAL, type = 'bar', name = 'Trips') %>%
+  add_trace(y = ~GOAL, name = 'Target') %>%
+  layout(yaxis = list(title = 'Count'), barmode = 'group')
+
+
+df <- data.frame(Districts= row.names(build.df)[1:(nrow(build.df)-1)], Existing = exist.df$TOTAL[1:(nrow(exist.df)-3)], Build = build.df$TOTAL[1:(nrow(build.df)-1)])
+
+
+#plot bar graph of difference
+p.exist_vs_build <- plot_ly(df, x = ~Districts, y = ~Existing, type = 'bar', name = 'Existing') %>%
+  add_trace(y = ~Build, name = 'Build', marker = list(color = 'rgb(55, 83, 109)')) %>%
+  layout(yaxis = list(title = 'Count'), barmode = 'group')
+
+#p
+
+
+adjustment_factors <- D2Dplots(csv_dir,  "Table     2.05.csv") 
+
+# Table 2.02 (calibration summary)
+reg_calib <- data.frame( 
+               type = c("Raw linked transit trips",	 
+                        "Raw unlinked transit trips", 
+                        "Target unlinked transit trips",
+                        "Regional calibration"),
+                trips = c(227696, 334141, 334680, 1.00000)
+               )
+   
+
+
+```
+
+-----------------------------------------------------------------------
+```{r}
+datatable(reg_calib)
+```
+
+
+Adj_Factors {data-orientation=columns, data-navmenu="Calibration"}
+===================================== 
+### Table 2.05: Station Group to Station Group Adj Factors
+```{r}
+#adjustment_factors$heatmap
+adj_df <- adjustment_factors$df
+brks <- c(0, 0.5, 1.0, 1.5, 2.0) 
+clrs <- c('lightgrey', 'olivegreen', 'lightgreen', 'lightblue', 'lightpink', 'lightred')
+adj_table <- datatable(adj_df, caption = "Station to Station Calibration Factors") %>% 
+    formatStyle(names(adj_df), backgroundColor = styleInterval(brks, clrs))
+adj_table
+```
+
+Station_Trips {data-orientation=columns, data-navmenu="Calibration"}
+===================================== 
+
+### Table 2.04: Station Group to Station Group Ridership
+```{r}
+p.calibration
+
+```
+
+
+Trips by mode {data-orientation=columns, data-navmenu="Existing"}
+===================================== 
+Column 
+-----------------------------------------------------------------------
+### Zero Car HH 
+
+```{r}
+table.name <- "Table    11.01.csv"
+x <- read_csv(paste(csv_dir,table.name, sep = "/"))
+
+
+x_car0 <- x %>% filter(`HH Cars` == "0 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y1 <- parset(x_car0, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 400, height = 200)
+
+y1
+
+```
+
+### 1 Car HH 
+
+```{r}
+x_car1 <- x %>% filter(`HH Cars` == "1 car H") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y2 <- parset(x_car1, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 400, height = 200)
+
+y2
+
+```
+
+### 2+ Car HH 
+
+```{r}
+x_car2 <- x %>% filter(`HH Cars` == "2+ car") %>%
+                filter(`Access mode` != "All Access") %>%
+                select(`Sub-mode`, `Access mode`, Model)
+
+y3 <- parset(x_car2, dimensions = c('Sub-mode', 'Access mode'), 
+       value = htmlwidgets::JS("function(d){return d.Model}"), 
+       tension = 0.5, width = 400, height = 200)
+y3
+
+```
+
+
+Project Trips {data-orientation=columns, data-navmenu="Project"}
+===================================== 
+Row {data-height=100} 
+-----------------------------------------------------------------------
+**Existing vs Build Boardings by Station Group**
+
+   * Station Group to Station Group Build Trips:                                  3.04
+   * Station Group to Station Group Build Trips (Added by Station Factors):       3.05
+   * Station Group to Station Group Project Trips:                                3.06
+   * Station Group to Station Group Project Trips (Added by Station Factors):     3.07
+
+### Existing vs Build 
+```{r}
+p.exist_vs_build
+
+```
+
+Row 
+-----------------------------------------------------------------------
+### Table 3.01: Existing station group to station group
+```{r}
+existing$chord
+
+```
+
+### Table 3.03: Build station group to station group
+```{r}
+build$chord
+
+```
+
+

@@ -1,0 +1,102 @@
+---
+title: "STOPSStations"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 9.5, fig.height = 14)
+
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ModelMetrics)
+library(foreign)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(broom)
+library(rgdal)
+library(leaflet)
+```
+
+
+
+```{r}
+stopsfile <- "StopsStation/STOPSStations_2.shp"
+stops <- readOGR(stopsfile, layer = "STOPSStations_2", verbose = FALSE)
+mdt_stops <- subset(stops, stops$STOPSTYPE > 0 & abs(stops$YCOORD2) > 0)
+exist_stns <- subset(stops, stops$STOPSTYPE > 1 & stops$NEWSTATION == 4)
+new_stns <- subset(stops, stops$STOPSTYPE > 1 & stops$NEWSTATION == 1)
+daily_board <- subset(stops, stops$DAILYBOARD > 0)
+
+exist_icons <- awesomeIcons(
+  icon = 'ios-close',
+  iconColor = 'black',
+  library = 'ion',
+  markerColor = "green"
+)
+
+
+new_icons <- awesomeIcons(
+  icon = 'ios-close',
+  iconColor = 'black',
+  library = 'ion',
+  markerColor = "blue"
+)
+
+
+map <- leaflet() %>%
+  
+      addProviderTiles("Stamen.Toner",group = "Stamen") %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addTiles(group = "OSM") %>%
+  
+      # MDT Bus stops
+      addMarkers(data = mdt_stops, lng = ~XCOORD2, lat = ~YCOORD2, popup = ~as.character(STATION),
+                 clusterOptions = markerClusterOptions(showCoverageOnHover = TRUE,
+                                                       zoomToBoundsOnClick = TRUE),
+                 group = "mdt bus stops") %>%
+  
+     # Existing Stations
+     addAwesomeMarkers(data = exist_stns, icon=exist_icons, lng = ~XCOORD2, lat = ~YCOORD2, 
+                popup = ~as.character(STATION),
+                group = "existing stations") %>%  
+     
+     # New stations
+     addAwesomeMarkers(data = new_stns, icon=new_icons, lng = ~LONG, lat = ~LAT, 
+                popup = ~as.character(STATION),
+                group = "new stations") %>% 
+  
+     # Add layer controls
+     addLayersControl(
+       baseGroups = c("OSM", "Stamen"),
+       overlayGroups = c( "mdt bus stops", "existing stations", "new stations"),
+       options = layersControlOptions(collapsed = FALSE)
+      )
+
+map
+
+
+```
+
+
+```{r}
+apc_data <- leaflet() %>%
+  
+      addProviderTiles("Stamen.Toner",group = "Stamen") %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addTiles(group = "OSM") %>%
+      setView(lng = -80.1918, lat = 25.7617, zoom = 10) %>%
+      
+      # APC Data
+      addCircleMarkers( data = daily_board,
+          lng = ~XCOORD2, lat = ~YCOORD2,
+          radius = ~DAILYBOARD/250,
+          stroke = TRUE, fillOpacity = 0.5
+        )
+
+apc_data
+
+```
+

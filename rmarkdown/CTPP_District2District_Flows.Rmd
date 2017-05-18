@@ -1,0 +1,114 @@
+---
+title: "CTPP District to District Flows"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+    keep_md: yes
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(parsetR) # devtools::install_github("timelyportfolio/parsetR")
+library(htmltools)
+library(DT)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+library(crosstalk)
+
+options(DT.options = list(
+              initComplete = JS("function(settings, json) { ",
+                 "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});","}"),
+              searchHighlight = TRUE
+              ))
+```
+
+## CTPP District-District Summary prior to factoring
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+dir <- '/Volumes/C/projects/TRB_Apps_2017/Infographic_STOPS/data'
+txt_dir <- paste(dir,"txt_extract", sep = "/")
+csv_dir <- paste(dir,"csv_dir",sep ="/")
+ctpp_before_filename <- "CTPP District-District Summary prior to factoring.csv"
+ctpp_after_filename <- "CTPP District-District Summary after factoring.csv"
+ctpp_factor_filename <- "CTPP District-District Percent growth after factoring.csv"
+
+ctpp_df <- read.csv(paste(csv_dir,ctpp_before_filename, sep = "/"))
+district_names <- ctpp_df$District
+row.names(ctpp_df) <- district_names
+ctpp_df <- ctpp_df %>% select (-District)
+colnames(ctpp_df) <- district_names
+
+# Highlighted table based on 25%, 50%, 75% percent marks 
+brks <- quantile(ctpp_df, probs = seq(0, 1, .25), na.rm = TRUE)
+clrs <- c('lightgrey', 'olivegreen', 'lightgreen', 'lightblue', 'lightpink', 'lightred')
+ctpp_table <- datatable(ctpp_df, caption = "CTPP District-District Summary prior to factoring") %>% 
+    formatStyle(names(ctpp_df), backgroundColor = styleInterval(brks, clrs))
+
+# Function to process ctpp district file 
+ctpp_top_25flows <- read.csv(paste(csv_dir,ctpp_before_filename, sep = "/")) %>%
+              rename(Origin = District) %>%
+              gather(Destination, Trips, -Origin) %>%
+              filter(Destination != "Total") %>%
+              filter(Origin != "Total") %>%
+              filter(Trips > 0) %>%
+              separate(Destination, c("X","Destination"), sep= "X") %>%
+              select (-X) %>%
+              arrange(desc(Trips)) #%>%
+              #slice(1:25)
+              
+# Compute percentages
+d2d_flow <- parset(ctpp_top_25flows[,c("Origin","Destination")], tension = 0.5)
+
+ctpp_table
+
+
+
+```
+
+## CTPP District-District Summary after factoring
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+ctpp_df <- read.csv(paste(csv_dir,ctpp_after_filename, sep = "/"))
+district_names <- ctpp_df$District
+row.names(ctpp_df) <- district_names
+ctpp_df <- ctpp_df %>% select (-District)
+colnames(ctpp_df) <- district_names
+
+# Highlighted table based on 25%, 50%, 75% percent marks 
+brks <- quantile(ctpp_df, probs = seq(0, 1, .25), na.rm = TRUE)
+clrs <- c('lightgrey', 'olivegreen', 'lightgreen', 'lightblue', 'lightpink', 'lightred')
+ctpp_table <- datatable(ctpp_df, caption = "CTPP District-District Summary prior to factoring") %>% 
+    formatStyle(names(ctpp_df), backgroundColor = styleInterval(brks, clrs))
+
+ctpp_table
+
+```
+
+
+
+## CTPP District-District Percent growth after factoring
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+ctpp_df <- read.csv(paste(csv_dir,ctpp_factor_filename, sep = "/"))
+district_names <- ctpp_df$District
+row.names(ctpp_df) <- district_names
+ctpp_df <- ctpp_df %>% select (-District)
+colnames(ctpp_df) <- district_names
+
+# Highlighted table based on 25%, 50%, 75% percent marks 
+brks <- quantile(ctpp_df, probs = seq(0, 1, .25), na.rm = TRUE)
+clrs <- c('lightgrey', 'olivegreen', 'lightgreen', 'lightblue', 'lightpink', 'lightred')
+ctpp_table <- datatable(ctpp_df, caption = "CTPP District-District Summary prior to factoring") %>% 
+    formatStyle(names(ctpp_df), backgroundColor = styleInterval(brks, clrs))
+
+ctpp_table
+
+```
+
